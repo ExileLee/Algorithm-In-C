@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define VERTICESCOUNT 10
+#define VERTICESNUM 10
 
 typedef struct _adjNode {
-    int accountId;
-    int isVip;
+    int vertex;
     struct _adjNode *next;
 } AdjNode;
 
-typedef struct _queueNode {
+typedef struct _queueNode 
+{
     int data;
     struct _queueNode *next;    
 } QueueNode;
@@ -20,69 +20,88 @@ typedef struct _queue
     QueueNode *tail;
 } Queue;
 
+typedef struct _graph
+{
+    int verticeNum;
+    int *visited;
+    AdjNode **adjList;
+} Graph;
+
+Graph *createGraph(int verticeNum);
 void enqueue(Queue *queue, int data);
 int dequeue(Queue *queue);
-void addEdge(AdjNode **adjList, int src, int dest);
-void bfs(int s);
-
-AdjNode *adjList[VERTICESCOUNT];
+void addEdge(Graph *graph, int src, int dest);
+void bfs(Graph *graph, int s);
 
 int main(int argc, char const *argv[])
 {
-    addEdge(adjList, 0, 1);
-    addEdge(adjList, 0, 2);
-    addEdge(adjList, 0, 3);
-    addEdge(adjList, 1, 4);
-    addEdge(adjList, 1, 5);
-    addEdge(adjList, 2, 6);
-    addEdge(adjList, 2, 7);
-    addEdge(adjList, 2, 8);
-    addEdge(adjList, 3, 2);
-    addEdge(adjList, 3, 9);
-    addEdge(adjList, 9, 1);
+    Graph *graph = createGraph(VERTICESNUM);
+
+    addEdge(graph, 0, 1);
+    addEdge(graph, 0, 2);
+    addEdge(graph, 0, 3);
+    addEdge(graph, 1, 4);
+    addEdge(graph, 1, 5);
+    addEdge(graph, 2, 6);
+    addEdge(graph, 2, 7);
+    addEdge(graph, 2, 8);
+    addEdge(graph, 3, 2);
+    addEdge(graph, 3, 9);
+    addEdge(graph, 9, 1);
     
-    bfs(0);
+    bfs(graph, 0);
 
     return 0;
 }
 
-void addEdge(AdjNode **adjList, int src, int dest)
+Graph *createGraph(int verticeNum)
+{
+    Graph *graph = (Graph *)malloc(sizeof(Graph));
+    graph->verticeNum = VERTICESNUM;
+    graph->adjList = (AdjNode **)malloc(sizeof(AdjNode *) * VERTICESNUM);
+    graph->visited = (int *)malloc(sizeof(int) * VERTICESNUM);
+
+    for (size_t i = 0; i < verticeNum; i++)
+    {
+        graph->adjList[i] = NULL;
+        graph->visited[i] = 0;
+    }
+    
+    return graph;
+}
+
+void addEdge(Graph *graph, int src, int dest)
 {
     AdjNode *newNode = (AdjNode *)malloc(sizeof(AdjNode));
-    newNode->accountId = dest;
-    newNode->next = adjList[src];
-    adjList[src] = newNode;
+    newNode->vertex = dest;
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
 }
 
 // Travels all level vertices
-void bfs(int s)
+void bfs(Graph *graph, int s)
 {
     void addEdgeToQueue(Queue *queue, AdjNode *adjNode);
     Queue queue;
     queue.head = NULL;
     queue.tail = NULL;
 
-    int visived[VERTICESCOUNT];
-    for (size_t i = 0; i < VERTICESCOUNT; i++)
-        visived[i] = 0;
-    
-    addEdgeToQueue(&queue, adjList[s]);
+    addEdgeToQueue(&queue, graph->adjList[s]);
     while ((s = dequeue(&queue)) >= 0)
     {
-        if (visived[s]) continue;
+        if (graph->visited[s]) continue;
         
-         visived[s] = 1;
+         graph->visited[s] = 1;
          printf("%d\n", s);
-         addEdgeToQueue(&queue, adjList[s]);
+         addEdgeToQueue(&queue, graph->adjList[s]);
     }
-
 }
 
 void addEdgeToQueue(Queue *queue, AdjNode *adjNode)
 {
     while (adjNode != NULL)
     {
-        enqueue(queue, adjNode->accountId);
+        enqueue(queue, adjNode->vertex);
         adjNode = adjNode->next;
     }
 }
